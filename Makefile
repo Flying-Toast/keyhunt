@@ -1,4 +1,4 @@
-OBJECTS=main.o
+OBJECTS=main.o levels.o util.o
 EXE=runme
 CC=clang
 CFLAGS=-Wall -g
