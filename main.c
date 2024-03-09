@@ -45,6 +45,7 @@ static int g_playerdir;
 // level and they will end up having to redo it.
 static lvl_impl_t levelimpls[] = {
 	lvlimpl_onboarding,
+	lvlimpl_digitline,
 };
 
 static void opendb(void) {
@@ -347,7 +348,8 @@ void tryclaim(uid_t puid, char *trycode) {
 			activate_level(g_playerdir, curlvl + 1, puid);
 			printf(
 				"Congrats! You passed level %u. The next level"
-				" has now been started in your play/ directory.\n"
+				" has now been started in your play/ directory."
+				" see the README for more information.\n"
 				, curlvl
 			);
 		}
@@ -394,19 +396,20 @@ int main(int argc, char **argv) {
 		);
 	} else if (isclaim) {
 		tryclaim(g_myuid, claimcode);
+	} else if (usr_has_inprogress(g_myuid)) {
+		printf(
+			"Welcome back %s. cd into play/%s to continue where you left off."
+			" when you find the secret key, come back and run this program again"
+			" like this:\n"
+			"    ./runme claim PUT_SECRET_KEY_HERE\n"
+			, myname()
+			, myname()
+		);
+	} else if (!usr_won(g_myuid)) {
+		unsigned newlvl = usr_numunlocked(g_myuid) + 1;
+		activate_level(g_playerdir, newlvl, g_myuid);
+		printf("Welcome back! Level %u has been started in your play/ directory.\n", newlvl);
 	} else {
-		if (usr_has_inprogress(g_myuid)) {
-			printf(
-				"Welcome back %s. cd into play/%s to continue where you left off.\n"
-				, myname()
-				, myname()
-			);
-		} else {
-			if (!usr_won(g_myuid)) {
-				unsigned newlvl = usr_numunlocked(g_myuid) + 1;
-				activate_level(g_playerdir, newlvl, g_myuid);
-				printf("Welcome back! Level %u has been started in your play/ directory.\n", newlvl);
-			}
-		}
+		puts("You've finished all the levels so far! More levels are coming soon...");
 	}
 }

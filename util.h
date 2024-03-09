@@ -20,6 +20,9 @@
 	})
 
 
-void randstr(char *buf, size_t len);
+void randalnum(char *buf, size_t len);
+void randalnum_guaranteed_alpha(char *buf, size_t len);
+unsigned rand_lt(unsigned lt);
+void randdigits(char *buf, size_t len);
 
 #endif

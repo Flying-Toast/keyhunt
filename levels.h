@@ -5,5 +5,6 @@
 typedef char *(*lvl_impl_t)(int readmefd, int filesdir, unsigned lvlno);
 
 char *lvlimpl_onboarding(int readmefd, int filesdir, unsigned lvlno);
+char *lvlimpl_digitline(int readmefd, int filesdir, unsigned lvlno);
 
 #endif
