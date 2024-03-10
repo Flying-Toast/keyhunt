@@ -30,7 +30,7 @@ static void randstr(char *legal, char *buf, size_t len) {
 
 // random alphanumeric string
 void randalnum(char *buf, size_t len) {
-	static char legal[] = LCALPHA UCALPHA DIGITS;
+	char *legal = LCALPHA UCALPHA DIGITS;
 	randstr(legal, buf, len);
 }
 

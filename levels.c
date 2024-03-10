@@ -113,3 +113,42 @@ char *lvlimpl_fixedkeylinelen(int readmefd, int filesdir, unsigned lvlno) {
 	return secret;
 #undef MAXLINESIZE
 }
+
+char *lvlimpl_longestline(int readmefd, int filesdir, unsigned lvlno) {
+#define LINEBUFSIZE 250
+	dprintf(readmefd,
+		"Examine the lines of the file files/list."
+		" Your secret key is the longest line in that file."
+		"\n"
+	);
+
+	// secretsize = num chars excl NUL
+	int secretsize = rand_between(100, LINEBUFSIZE);
+	static char secret[LINEBUFSIZE] = {0};
+	randalnum(secret, secretsize+1);
+	char buf[LINEBUFSIZE];
+
+	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
+
+	int nbefore = rand_between(500, 1000);
+	int nafter = rand_between(500, 1000);
+	for (int i = 0; i < nafter; i++) {
+		int nch = rand_between(10, secretsize);
+		randalnum(buf, nch+1);
+		buf[nch] = '\n';
+		write(listfile, buf, nch+1);
+	}
+	secret[secretsize] = '\n';
+	write(listfile, secret, secretsize+1);
+	secret[secretsize] = '\0';
+	for (int i = 0; i < nbefore; i++) {
+		int nch = rand_between(10, secretsize);
+		randalnum(buf, nch+1);
+		buf[nch] = '\n';
+		write(listfile, buf, nch+1);
+	}
+
+	close(listfile);
+	return secret;
+#undef LINEBUFSIZE
+}

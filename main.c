@@ -47,6 +47,7 @@ static lvl_impl_t levelimpls[] = {
 	lvlimpl_onboarding,
 	lvlimpl_fixedkeylinelen,
 	lvlimpl_digitline,
+	lvlimpl_longestline,
 };
 
 static void opendb(void) {
