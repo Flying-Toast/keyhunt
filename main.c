@@ -45,6 +45,7 @@ static int g_playerdir;
 // level and they will end up having to redo it.
 static lvl_impl_t levelimpls[] = {
 	lvlimpl_onboarding,
+	lvlimpl_fixedkeylinelen,
 	lvlimpl_digitline,
 };
 

@@ -13,6 +13,10 @@ unsigned rand_lt(unsigned lt) {
 	return *((unsigned *)buf) % lt;
 }
 
+unsigned rand_between(unsigned min, unsigned lt) {
+	return rand_lt(lt - min) + min;
+}
+
 static char randchr(char *choices) {
 	return choices[rand_lt(strlen(choices))];
 }

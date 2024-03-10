@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "levels.h"
@@ -38,15 +39,15 @@ char *lvlimpl_onboarding(int readmefd, int filesdir, unsigned lvlno) {
 
 char *lvlimpl_digitline(int readmefd, int filesdir, unsigned lvlno) {
 	dprintf(readmefd,
-		"A file called 'list' has been created in the files/ directory."
-		" There is exactly one line in that file that contains only"
+		"Inspect the contents of `files/list`."
+		" One line in that file that contains only"
 		" digits. Find that line - it is your secret key."
 		"\n"
 	);
 
 	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
-	int nbefore = rand_lt(500);
-	int nafter = rand_lt(500);
+	int nbefore = rand_between(100, 500);
+	int nafter = rand_between(100, 500);
 	char buf[25];
 	static char secret[25];
 	for (int i = 0; i < nbefore; i++) {
@@ -66,4 +67,49 @@ char *lvlimpl_digitline(int readmefd, int filesdir, unsigned lvlno) {
 	close(listfile);
 
 	return secret;
+}
+
+char *lvlimpl_fixedkeylinelen(int readmefd, int filesdir, unsigned lvlno) {
+#define MAXLINESIZE 75
+	unsigned secretsize = rand_between(25, MAXLINESIZE);
+	dprintf(readmefd,
+		"A file called 'list' has been created in the files/ directory."
+		" There is one line in that file that is exactly %u"
+		" characters long. That line is your secret key."
+		"\n"
+		, secretsize-1
+	);
+
+	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
+
+	int nbefore = rand_between(100, 500);
+	int nafter = rand_between(100, 500);
+
+	char buf[MAXLINESIZE];
+	for (int i = 0; i < nbefore; i++) {
+		int sz = rand_between(25, MAXLINESIZE);
+		if (sz == secretsize)
+			sz--;
+		randalnum(buf, sz);
+		buf[sz-1] = '\n';
+		write(listfile, buf, sz);
+	}
+	static char secret[MAXLINESIZE] = {0};
+	randalnum(secret, secretsize + 1);
+	secret[secretsize-1] = '\n';
+	write(listfile, secret, strlen(secret));
+	for (int i = 0; i < nafter; i++) {
+		int sz = rand_between(25, MAXLINESIZE);
+		if (sz == secretsize)
+			sz--;
+		randalnum(buf, sz);
+		buf[sz-1] = '\n';
+		write(listfile, buf, sz);
+	}
+
+	close(listfile);
+
+	secret[secretsize-1] = '\0';
+	return secret;
+#undef MAXLINESIZE
 }
