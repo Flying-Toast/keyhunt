@@ -267,11 +267,6 @@ static int usr_won(uid_t uid) {
 	return usr_numcomplete(uid) == ARRAY_LEN(levelimpls);
 }
 
-// is the user currently in a level?
-static int usr_has_inprogress(uid_t uid) {
-	return usr_numcomplete(uid) != usr_numunlocked(uid);
-}
-
 // returned string is only valid until this function is called again
 static char *usrnameof(uid_t uid) {
 	// TODO: handle deleted users
@@ -280,6 +275,38 @@ static char *usrnameof(uid_t uid) {
 // see usrnameof() above
 static char *myname(void) {
 	return usrnameof(g_myuid);
+}
+
+static void printent_iter(struct dbent *ent, void *_unused) {
+	if (ent->kind == 'u') {
+		printf(
+			"unlocked:\n"
+			"\tuid: %lu (%s)\n"
+			"\tlvl: %u\n"
+			"\tsecret: %s\n"
+			, (unsigned long)ent->ku.uid
+			, usrnameof(ent->ku.uid)
+			, ent->ku.lvl
+			, ent->ku.secret
+		);
+	} else if (ent->kind == 'c') {
+		printf(
+			"completed:\n"
+			"\tuid: %lu (%s)\n"
+			"\tlvl: %u\n"
+			, (unsigned long)ent->ku.uid
+			, usrnameof(ent->ku.uid)
+			, ent->ku.lvl
+		);
+	} else {
+		fprintf(stderr, "Unknown dbent kind '%c'\n", ent->kind);
+		exit(1);
+	}
+}
+
+// is the user currently in a level?
+static int usr_has_inprogress(uid_t uid) {
+	return usr_numcomplete(uid) != usr_numunlocked(uid);
 }
 
 static void rmfiles(int dirfd) {
@@ -365,6 +392,12 @@ int main(int argc, char **argv) {
 	// TODO: prevent someone from holding db lock indefinitely
 	// TODO: by e.g. suspending runme with ^Z
 	opendb();
+
+	// database dump
+	if (argc == 2 && !strcmp(argv[1], "db") && geteuid() == getuid()) {
+		iter_db(printent_iter, NULL);
+		return 0;
+	}
 
 	int isclaim;
 	char *claimcode;
