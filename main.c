@@ -378,7 +378,7 @@ void tryclaim(uid_t puid, char *trycode) {
 			printf(
 				"Congrats! You passed level %u. The next level"
 				" has now been started in your play/ directory."
-				" see the README for more information.\n"
+				" See the README for more information.\n"
 				, curlvl
 			);
 		}
@@ -402,12 +402,32 @@ int main(int argc, char **argv) {
 
 	int isclaim;
 	char *claimcode;
-	if (argc == 3 && !strcmp(argv[1], "claim")) {
+	if ((argc == 2 || argc == 3) && !strcmp(argv[1], "claim")) {
 		isclaim = 1;
-		claimcode = argv[2];
-	} else if (argc != 1) {
-		fputs("Incorrect usage.\n", stderr);
-		exit(1);
+		if (argc == 3) {
+			claimcode = argv[2];
+		} else {
+			if (isatty(0)) {
+				puts(
+					"You didn't enter a secret key. Try"
+					" piping the key into `runme claim`,"
+					" or specify it as a commandline argument."
+				);
+				exit(1);
+			}
+			#define PIPEDKEYSTRSIZE 2000
+			claimcode = malloc(PIPEDKEYSTRSIZE+1);
+			int nread = read(0, claimcode, PIPEDKEYSTRSIZE);
+			if (nread == PIPEDKEYSTRSIZE) {
+				fputs("Piped input too long\n", stderr);
+				exit(1);
+			}
+			claimcode[nread] = '\0';
+			int idx = nread - 1;
+			// trim trailing whitespace
+			while (idx >= 0 && (claimcode[idx] == '\n' || claimcode[idx] == ' '))
+				claimcode[idx--] = '\0';
+		}
 	}
 
 	mkdir("play", 0755);
@@ -425,7 +445,7 @@ int main(int argc, char **argv) {
 			"Welcome to keyhunt - a puzzle game designed to help you exercise"
 			" your scripting skills.\nA personal instance of the game has just been"
 			" started for you. To begin, run this command:\n"
-			BOLD("cd play/%s") "\nand take a look at the file named README.lvl-1\n"
+			"    " BOLD("cd play/%s") "\nand take a look at the file named README.lvl-1\n"
 			, myname()
 			, myname()
 		);
@@ -433,10 +453,14 @@ int main(int argc, char **argv) {
 		tryclaim(g_myuid, claimcode);
 	} else if (usr_has_inprogress(g_myuid)) {
 		printf(
-			"Welcome back %s. cd into play/%s to continue where you left off."
-			" when you find the secret key, come back and run this program again"
+			"Welcome back %s. cd into play/%s to continue where you left off.\n\n"
+			"When you find the secret key, come back and run this program again"
 			" like this:\n"
-			"    ./runme claim PUT_SECRET_KEY_HERE\n"
+			"    " BOLD("./runme claim PUT_SECRET_KEY_HERE") "\n"
+			"Or pipe-in the secret key directly:\n"
+			"    " BOLD("echo SECRET_KEY | ./runme claim") "\n"
+			"(of course, replacing 'echo SECRET_KEY' with whatever awk/sed/... command"
+			" you used to solve the level)\n"
 			, myname()
 			, myname()
 		);

@@ -19,6 +19,8 @@ char *lvlimpl_onboarding(int readmefd, int filesdir, unsigned lvlno) {
 		" find it.\n\nWhen you find the key, execute the"
 		" `runme` program (the program you just used to start the game) like this:\n"
 		"    runme claim PUT_SECRET_KEY_HERE\n\n"
+		"You can also pipe in your key instead of giving it as an argument:\n"
+		"    echo SECRET_KEY | runme claim\n\n"
 		"This first level is easy; your secret key has been written to a file in the files/"
 		" directory. Use `cd`, `ls`, and `cat` to find it, and then claim the key using the"
 		" `runme` program as described above."
