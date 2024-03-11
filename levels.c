@@ -32,7 +32,7 @@ char *lvlimpl_onboarding(int readmefd, int filesdir, unsigned lvlno) {
 	static char secret[15];
 	randalnum(secret, ARRAY_LEN(secret));
 
-	int thefile = MUST(openat(filesdir, "hello", O_CREAT|O_WRONLY, 0644));
+	int thefile = MUST(openat(filesdir, "secret", O_CREAT|O_WRONLY, 0644));
 	secret[sizeof(secret)-1] = '\n';
 	write(thefile, secret, ARRAY_LEN(secret));
 	secret[sizeof(secret)-1] = '\0';
@@ -182,7 +182,7 @@ char *lvlimpl_mostrecentfile(int readmefd, int filesdir, unsigned lvlno) {
 
 	dprintf(readmefd,
 		"%u empty files have been created in the files/ directory."
-		" Find the file with the most recent modification time - the"
+		" Find the file with the most recent modification time. The"
 		" name of that file is your secret key."
 		"\n"
 		, nfiles
