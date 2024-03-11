@@ -1,10 +1,12 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "levels.h"
@@ -389,12 +391,27 @@ void tryclaim(uid_t puid, char *trycode) {
 	}
 }
 
+// This timer is to prevent someone from doing a denial-of-service
+// by e.g. suspending us while we're holding the db lock.
+void init_killtimer(void) {
+	timer_t timer;
+	struct sigevent evt = {
+		.sigev_notify = SIGEV_SIGNAL,
+		.sigev_signo = SIGKILL,
+	};
+	MUST(timer_create(CLOCK_REALTIME, &evt, &timer));
+	struct itimerspec spec = {
+		// 100000000ns = 100ms
+		.it_value = (struct timespec) { .tv_nsec = 100000000 }
+	};
+	MUST(timer_settime(timer, 0, &spec, NULL));
+}
+
 int main(int argc, char **argv) {
 	umask(0022);
 	MUST(chdir("/home/simon/keyhunt"));
-	// TODO: prevent someone from holding db lock indefinitely
-	// TODO: by e.g. suspending runme with ^Z
 	opendb();
+	init_killtimer();
 
 	// database dump
 	if (argc == 2 && !strcmp(argv[1], "db") && geteuid() == getuid()) {
@@ -438,6 +455,14 @@ int main(int argc, char **argv) {
 			while (idx >= 0 && (claimcode[idx] == '\n' || claimcode[idx] == ' '))
 				claimcode[idx--] = '\0';
 		}
+	}
+
+	if (argc == 1 && !isatty(0)) {
+		puts(
+			"Looks like you might be piping data in, but you didn't specify any arguments."
+			" Make sure you pipe into `runme claim` not just `runme`."
+		);
+		exit(1);
 	}
 
 	mkdir("play", 0755);
