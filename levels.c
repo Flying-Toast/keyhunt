@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "levels.h"
@@ -153,4 +155,38 @@ char *lvlimpl_longestline(int readmefd, int filesdir, unsigned lvlno) {
 	close(listfile);
 	return secret;
 #undef LINEBUFSIZE
+}
+
+char *lvlimpl_mostrecentfile(int readmefd, int filesdir, unsigned lvlno) {
+#define NAMEBUFSIZE 16
+	unsigned nfiles = rand_between(100, 200);
+	static char namebuf[NAMEBUFSIZE];
+
+	time_t now = time(NULL);
+	for (int i = 0; i < nfiles; i++) {
+		randalnum(namebuf, NAMEBUFSIZE);
+		// pfft, what are the chances we make the same
+		// random name twice? let's assume it won't happen.
+		int fd = MUST(openat(filesdir, namebuf, O_CREAT|O_EXCL|O_WRONLY, 0644));
+		// dont change the secret file, let it keep the current time
+		if (i != nfiles - 1) {
+			unsigned sec_offset = rand_between(60*2, 60*60*48);
+			struct timespec ts[2];
+			ts[0].tv_nsec = UTIME_OMIT;
+			ts[1].tv_nsec = 0;
+			ts[1].tv_sec = now - sec_offset;
+			MUST(futimens(fd, ts));
+		}
+		close(fd);
+	}
+
+	dprintf(readmefd,
+		"%u empty files have been created in the files/ directory."
+		" Find the file with the most recent modification time - the"
+		" name of that file is your secret key."
+		"\n"
+		, nfiles
+	);
+	return namebuf;
+#undef NAMEBUFSIZE
 }

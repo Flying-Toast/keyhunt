@@ -45,9 +45,10 @@ static int g_playerdir;
 // level and they will end up having to redo it.
 static lvl_impl_t levelimpls[] = {
 	lvlimpl_onboarding,
-	lvlimpl_fixedkeylinelen,
 	lvlimpl_digitline,
+	lvlimpl_fixedkeylinelen,
 	lvlimpl_longestline,
+	lvlimpl_mostrecentfile,
 };
 
 static void opendb(void) {
@@ -469,6 +470,6 @@ int main(int argc, char **argv) {
 		activate_level(g_playerdir, newlvl, g_myuid);
 		printf("Welcome back! Level %u has been started in your play/ directory.\n", newlvl);
 	} else {
-		puts("You've finished all the levels so far! More levels are coming soon...");
+		puts("You've finished all the levels! More levels are coming soon...");
 	}
 }
