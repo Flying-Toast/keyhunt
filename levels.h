@@ -9,5 +9,6 @@ char *lvlimpl_digitline(int readmefd, int filesdir, unsigned lvlno);
 char *lvlimpl_fixedkeylinelen(int readmefd, int filesdir, unsigned lvlno);
 char *lvlimpl_longestline(int readmefd, int filesdir, unsigned lvlno);
 char *lvlimpl_mostrecentfile(int readmefd, int filesdir, unsigned lvlno);
+char *lvlimpl_concatposns(int readmefd, int filesdir, unsigned lvlno);
 
 #endif

@@ -43,13 +43,13 @@ char *lvlimpl_onboarding(int readmefd, int filesdir, unsigned lvlno) {
 
 char *lvlimpl_digitline(int readmefd, int filesdir, unsigned lvlno) {
 	dprintf(readmefd,
-		"Inspect the contents of `files/list`."
+		"Inspect the contents of `files/lines`."
 		" One line in that file that contains only"
 		" digits. Find that line - it is your secret key."
 		"\n"
 	);
 
-	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
+	int listfile = MUST(openat(filesdir, "lines", O_CREAT|O_WRONLY, 0644));
 	int nbefore = rand_between(100, 500);
 	int nafter = rand_between(100, 500);
 	char buf[25];
@@ -77,14 +77,14 @@ char *lvlimpl_fixedkeylinelen(int readmefd, int filesdir, unsigned lvlno) {
 #define MAXLINESIZE 75
 	unsigned secretsize = rand_between(25, MAXLINESIZE);
 	dprintf(readmefd,
-		"A file called 'list' has been created in the files/ directory."
+		"A file called 'lines' has been created in the files/ directory."
 		" There is one line in that file that is exactly %u"
 		" characters long. That line is your secret key."
 		"\n"
 		, secretsize-1
 	);
 
-	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
+	int listfile = MUST(openat(filesdir, "lines", O_CREAT|O_WRONLY, 0644));
 
 	int nbefore = rand_between(100, 500);
 	int nafter = rand_between(100, 500);
@@ -121,7 +121,7 @@ char *lvlimpl_fixedkeylinelen(int readmefd, int filesdir, unsigned lvlno) {
 char *lvlimpl_longestline(int readmefd, int filesdir, unsigned lvlno) {
 #define LINEBUFSIZE 250
 	dprintf(readmefd,
-		"Examine the lines of the file files/list."
+		"Examine the lines of the file files/lines."
 		" Your secret key is the longest line in that file."
 		"\n"
 	);
@@ -132,7 +132,7 @@ char *lvlimpl_longestline(int readmefd, int filesdir, unsigned lvlno) {
 	randalnum(secret, secretsize+1);
 	char buf[LINEBUFSIZE];
 
-	int listfile = MUST(openat(filesdir, "list", O_CREAT|O_WRONLY, 0644));
+	int listfile = MUST(openat(filesdir, "lines", O_CREAT|O_WRONLY, 0644));
 
 	int nbefore = rand_between(500, 1000);
 	int nafter = rand_between(500, 1000);
@@ -189,4 +189,33 @@ char *lvlimpl_mostrecentfile(int readmefd, int filesdir, unsigned lvlno) {
 	);
 	return namebuf;
 #undef NAMEBUFSIZE
+}
+
+char *lvlimpl_concatposns(int readmefd, int filesdir, unsigned lvlno) {
+	unsigned nlines = rand_between(50, 75);
+	char *secret = malloc(nlines + 1);
+	randalnum(secret, nlines + 1);
+	int listfile = MUST(openat(filesdir, "lines", O_CREAT|O_WRONLY, 0644));
+
+	char *linebuf = malloc(nlines + 1);
+	for (int i = 0; i < nlines; i++) {
+		randalnum(linebuf, nlines + 1);
+		linebuf[nlines] = '\n';
+		linebuf[i] = secret[i];
+		write(listfile, linebuf, nlines + 1);
+	}
+	free(linebuf);
+	close(listfile);
+
+	dprintf(readmefd,
+		"%u lines of equal length have been written to 'files/lines'. Concatinate"
+		" the first character of the first line, the 2nd character of"
+		" the 2nd line, the 3rd character of the 3rd line, etc."
+		" This should leave you with a string that is %u characters long."
+		" That string is your secret key."
+		"\n"
+		, nlines
+		, nlines
+	);
+	return secret;
 }
