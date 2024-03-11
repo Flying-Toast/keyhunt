@@ -404,7 +404,15 @@ int main(int argc, char **argv) {
 
 	int isclaim;
 	char *claimcode;
-	if ((argc == 2 || argc == 3) && !strcmp(argv[1], "claim")) {
+	if (argc > 1) {
+		if (argc > 3) {
+			puts("Too many arguments");
+			return 1;
+		}
+		if (strcmp(argv[1], "claim")) {
+			puts("Incorrect usage. Did you mean to say 'claim'?");
+			return 1;
+		}
 		isclaim = 1;
 		if (argc == 3) {
 			claimcode = argv[2];
