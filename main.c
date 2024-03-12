@@ -326,6 +326,19 @@ static void rmfiles(int dirfd) {
 	MUST(closedir(dirent));
 }
 
+static int openfilesdir(int playerdir) {
+	mkdirat(playerdir, "files", 0755); // allowed to fail if it already exists
+	return MUST(openat(playerdir, "files", O_DIRECTORY));
+}
+
+static void clear_playarea(int playerdir) {
+	// clear existing files in player dir
+	int filesdir = openfilesdir(playerdir);
+	rmfiles(playerdir);
+	rmfiles(filesdir);
+	close(filesdir);
+}
+
 static void activate_level(int playerdir, unsigned lvlno, uid_t playeruid) {
 	char pathbuf[100] = {0};
 	int nwritten = snprintf(pathbuf, sizeof(pathbuf), "README.lvl-%u", lvlno);
@@ -334,11 +347,7 @@ static void activate_level(int playerdir, unsigned lvlno, uid_t playeruid) {
 		exit(1);
 	}
 
-	// clear existing files in player dir
-	mkdirat(playerdir, "files", 0755); // allowed to fail if it already exists
-	int filesdir = MUST(openat(playerdir, "files", O_DIRECTORY));
-	rmfiles(playerdir);
-	rmfiles(filesdir);
+	clear_playarea(playerdir);
 
 	struct dbent newlvl;
 	newlvl.kind = 'u';
@@ -350,6 +359,7 @@ static void activate_level(int playerdir, unsigned lvlno, uid_t playeruid) {
 		exit(1);
 	}
 	int readmefd = MUST(openat(playerdir, pathbuf, O_CREAT|O_EXCL|O_WRONLY, 0644));
+	int filesdir = openfilesdir(playerdir);
 	newlvl.ku.secret = (*levelimpls[lvlno - 1])(readmefd, filesdir, lvlno);
 	insertdb(&newlvl);
 }
@@ -375,6 +385,16 @@ void tryclaim(uid_t puid, char *trycode) {
 		insertdb(&completed);
 
 		if (usr_won(puid)) {
+			clear_playarea(g_playerdir);
+			int readmefd = MUST(openat(g_playerdir, "README", O_CREAT|O_EXCL|O_WRONLY, 0644));
+			dprintf(readmefd,
+				"== You Win ==\n"
+				"You passed all the levels!\n\n"
+				"More levels may be added in the future; you can execute the `runme`"
+				" program at any time to check for newly-added levels."
+				"\n"
+			);
+			close(readmefd);
 			// TODO: A leaderboard would be cool
 			printf("You win! You completed all %u levels. (More levels coming soon...)\n", curlvl);
 		} else {
