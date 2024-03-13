@@ -12,10 +12,6 @@
 #include "levels.h"
 #include "util.h"
 
-#define ESCBOLD "\e[1m"
-#define ESCCLEAR "\e[m"
-#define BOLD(STR) ESCBOLD STR ESCCLEAR
-
 struct dbent {
 	char kind;
 
@@ -433,8 +429,8 @@ void init_killtimer(void) {
 int main(int argc, char **argv) {
 	umask(0022);
 	MUST(chdir("/home/simon/keyhunt"));
-	opendb();
 	init_killtimer();
+	opendb();
 
 	// database dump
 	if (argc == 2 && !strcmp(argv[1], "db") && geteuid() == getuid()) {
@@ -503,7 +499,8 @@ int main(int argc, char **argv) {
 			"Welcome to keyhunt - a puzzle game designed to help you exercise"
 			" your scripting skills.\nA personal instance of the game has just been"
 			" started for you. To begin, run this command:\n"
-			"    " BOLD("cd play/%s") "\nand take a look at the file named README.lvl-1\n"
+			"    cd play/%s\n"
+			"and take a look at the file named README.lvl-1\n"
 			, myname()
 			, myname()
 		);
@@ -514,9 +511,9 @@ int main(int argc, char **argv) {
 			"Welcome back %s. cd into play/%s to continue where you left off.\n\n"
 			"When you find the secret key, come back and run this program again"
 			" like this:\n"
-			"    " BOLD("./runme claim PUT_SECRET_KEY_HERE") "\n"
+			"    ./runme claim PUT_SECRET_KEY_HERE\n"
 			"Or pipe-in the secret key directly:\n"
-			"    " BOLD("echo SECRET_KEY | ./runme claim") "\n"
+			"    echo SECRET_KEY | ./runme claim\n"
 			"(of course, replacing 'echo SECRET_KEY' with whatever awk/sed/... command"
 			" you used to solve the level)\n"
 			, myname()

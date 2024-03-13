@@ -208,7 +208,7 @@ char *lvlimpl_concatposns(int readmefd, int filesdir, unsigned lvlno) {
 	close(listfile);
 
 	dprintf(readmefd,
-		"%u lines of equal length have been written to 'files/lines'. Concatinate"
+		"%u lines of equal length have been written to 'files/lines'. Concatenate"
 		" the first character of the first line, the 2nd character of"
 		" the 2nd line, the 3rd character of the 3rd line, etc."
 		" This should leave you with a string that is %u characters long."
@@ -272,14 +272,16 @@ char *lvlimpl_filenamesuffix(int readmefd, int filesdir, unsigned lvlno) {
 		randalnum(buf, NAMELEN+1);
 		if (buf[NAMELEN-1]=='c'&&buf[NAMELEN-2]=='b'&&buf[NAMELEN-3]=='a')
 			buf[NAMELEN-1] = 'z';
-		openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+		int fd = openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+		close(fd);
 	}
 	MUST(openat(filesdir, secret, O_CREAT|O_RDWR|O_EXCL, 0644));
 	while (--nafter) {
 		randalnum(buf, NAMELEN+1);
 		if (buf[NAMELEN-1]=='c'&&buf[NAMELEN-2]=='b'&&buf[NAMELEN-3]=='a')
 			buf[NAMELEN-1] = 'z';
-		openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+		int fd = openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+		close(fd);
 	}
 	dprintf(readmefd,
 		"Several files have been created in the files/ directory. Exactly ONE of those"
