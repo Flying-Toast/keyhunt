@@ -48,6 +48,7 @@ static int g_playerdir;
 static lvl_impl_t levelimpls[] = {
 	lvlimpl_onboarding,
 	lvlimpl_digitline,
+	lvlimpl_filenamesuffix,
 	lvlimpl_fixedkeylinelen,
 	lvlimpl_longestline,
 	lvlimpl_evenline,
@@ -402,9 +403,10 @@ void tryclaim(uid_t puid, char *trycode) {
 			activate_level(g_playerdir, curlvl + 1, puid);
 			printf(
 				"Congrats! You passed level %u. The next level"
-				" has now been started in your play/ directory."
+				" has now been started in your play/%s directory."
 				" See the README for more information.\n"
 				, curlvl
+				, myname()
 			);
 		}
 	} else {
@@ -523,7 +525,11 @@ int main(int argc, char **argv) {
 	} else if (!usr_won(g_myuid)) {
 		unsigned newlvl = usr_numunlocked(g_myuid) + 1;
 		activate_level(g_playerdir, newlvl, g_myuid);
-		printf("Welcome back! Level %u has been started in your play/ directory.\n", newlvl);
+		printf(
+			"Welcome back! Level %u has been started in your play/%s directory.\n"
+			, newlvl
+			, myname()
+		);
 	} else {
 		puts("You've finished all the levels! More levels are coming soon...");
 	}

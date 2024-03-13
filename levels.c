@@ -257,3 +257,35 @@ char *lvlimpl_evenline(int readmefd, int filesdir, unsigned lvlno) {
 	return secret;
 #undef MAXLINECHARS
 }
+
+char *lvlimpl_filenamesuffix(int readmefd, int filesdir, unsigned lvlno) {
+	#define NAMELEN 10
+	int nbefore = rand_between(100, 150);
+	int nafter = rand_between(100, 150);
+	static char secret[NAMELEN+1];
+	randalnum(secret, NAMELEN+1);
+	secret[NAMELEN-1] = 'c';
+	secret[NAMELEN-2] = 'b';
+	secret[NAMELEN-3] = 'a';
+	char buf[NAMELEN+1];
+	while (--nbefore) {
+		randalnum(buf, NAMELEN+1);
+		if (buf[NAMELEN-1]=='c'&&buf[NAMELEN-2]=='b'&&buf[NAMELEN-3]=='a')
+			buf[NAMELEN-1] = 'z';
+		openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+	}
+	MUST(openat(filesdir, secret, O_CREAT|O_RDWR|O_EXCL, 0644));
+	while (--nafter) {
+		randalnum(buf, NAMELEN+1);
+		if (buf[NAMELEN-1]=='c'&&buf[NAMELEN-2]=='b'&&buf[NAMELEN-3]=='a')
+			buf[NAMELEN-1] = 'z';
+		openat(filesdir, buf, O_CREAT|O_RDWR|O_EXCL, 0644);
+	}
+	dprintf(readmefd,
+		"Several files have been created in the files/ directory. Exactly ONE of those"
+		" files has a filename that ends with \"abc\". That filename is your secret key."
+		"\n(hint: try to do this using only `ls`)"
+		"\n"
+	);
+	return secret;
+}
