@@ -219,3 +219,41 @@ char *lvlimpl_concatposns(int readmefd, int filesdir, unsigned lvlno) {
 	);
 	return secret;
 }
+
+char *lvlimpl_evenline(int readmefd, int filesdir, unsigned lvlno) {
+#define MAXLINECHARS 100
+	static char secret[MAXLINECHARS + 1];
+	int seclen = rand_between(6, MAXLINECHARS);
+	if (seclen & 1)
+		seclen--;
+	randalnum(secret, seclen + 1);
+	secret[seclen] = '\n';
+	int nbefore = rand_between(100, 200);
+	int nafter = rand_between(100, 200);
+	int listfile = MUST(openat(filesdir, "lines", O_CREAT|O_WRONLY, 0644));
+	char buf[MAXLINECHARS];
+	while (nbefore--) {
+		int sz = rand_between(6, MAXLINECHARS);
+		if (!(sz & 1))
+			sz--;
+		randalnum(buf, sz + 1);
+		buf[sz] = '\n';
+		write(listfile, buf, sz + 1);
+	}
+	write(listfile, secret, seclen + 1);
+	while (nafter--) {
+		int sz = rand_between(6, MAXLINECHARS);
+		if (!(sz & 1))
+			sz--;
+		randalnum(buf, sz + 1);
+		buf[sz] = '\n';
+		write(listfile, buf, sz + 1);
+	}
+	dprintf(readmefd,
+		"There is a single line in `files/lines` that is of even length. Find that line."
+		"\n"
+	);
+	secret[seclen] = '\0';
+	return secret;
+#undef MAXLINECHARS
+}

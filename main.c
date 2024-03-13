@@ -50,6 +50,7 @@ static lvl_impl_t levelimpls[] = {
 	lvlimpl_digitline,
 	lvlimpl_fixedkeylinelen,
 	lvlimpl_longestline,
+	lvlimpl_evenline,
 	lvlimpl_mostrecentfile,
 	lvlimpl_concatposns,
 };
