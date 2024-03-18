@@ -272,8 +272,10 @@ static int usr_won(uid_t uid) {
 
 // returned string is only valid until this function is called again
 static char *usrnameof(uid_t uid) {
-	// TODO: handle deleted users
-	return MUST(getpwuid(uid))->pw_name;
+	struct passwd *pwd = getpwuid(uid);
+	if (!pwd)
+		return "<deleted user>";
+	return pwd->pw_name;
 }
 // see usrnameof() above
 static char *myname(void) {
