@@ -440,7 +440,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	int isclaim;
+	int isclaim = 0;
 	char *claimcode;
 	if (argc > 1) {
 		if (argc > 3) {
