@@ -430,7 +430,7 @@ void init_killtimer(void) {
 
 int main(int argc, char **argv) {
 	umask(0022);
-	MUST(chdir("/home/simon/keyhunt"));
+	MUST(chdir("/home/" BUILD_USER "/keyhunt"));
 	init_killtimer();
 	opendb();
 

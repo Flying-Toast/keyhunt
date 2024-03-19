@@ -1,7 +1,7 @@
 OBJECTS=main.o levels.o util.o
 EXE=runme
 CC=clang
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -D 'BUILD_USER="$(USER)"'
 RM=rm -f
 
 $(EXE): $(OBJECTS)
